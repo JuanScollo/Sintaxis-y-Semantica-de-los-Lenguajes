@@ -1,0 +1,14 @@
+Compilar Flex y Bison:
+
+en la bash
+
+bison -d parser.y -o parser.c
+flex lexer.l
+gcc parser.c lex.yy.c -o parser -lfl
+
+  
+Ejecutar el programa:
+
+en la  bash
+
+./parser archivo_de_prueba.txt
