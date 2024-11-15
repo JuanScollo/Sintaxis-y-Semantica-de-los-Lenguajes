@@ -17,13 +17,13 @@ void yyerror(const char *s);
 programa: declaraciones bloque_principal;
 
 declaraciones: VARIABLE IDENTIFICADOR FIN_SENTENCIA
-              | VARIABLE IDENTIFICADOR FIN_SENTENCIA declaraciones;
+             | VARIABLE IDENTIFICADOR FIN_SENTENCIA declaraciones;
 
-bloque_principal: asignacion_condicionales
-                | asignacion_varias;
+bloque_principal: asignacion_varias
+                | asignacion_condicionales;
 
-asignacion_condicionales: asignacion SI condicion APERTURA_BLOQUE asignacion_varias CIERRE_BLOQUE
-                         | asignacion SI condicion APERTURA_BLOQUE asignacion_varias CIERRE_BLOQUE SINO APERTURA_BLOQUE asignacion_varias CIERRE_BLOQUE;
+asignacion_condicionales: SI condicion APERTURA_BLOQUE asignacion_varias CIERRE_BLOQUE
+                        | SI condicion APERTURA_BLOQUE asignacion_varias CIERRE_BLOQUE SINO APERTURA_BLOQUE asignacion_varias CIERRE_BLOQUE;
 
 asignacion_varias: asignacion
                  | asignacion asignacion_varias;
