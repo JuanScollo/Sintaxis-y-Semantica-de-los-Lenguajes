@@ -17,7 +17,7 @@
 "'"[a-z0-9]"'"                        { return CARACTER; }
 
 "/"                                   { return APERTURA_BLOQUE; }
-"\"                                  { return CIERRE_BLOQUE; }
+"\\"                                  { return CIERRE_BLOQUE; }
 "!!"                                  { return FIN_SENTENCIA; }
 "->"                                  { return ASIGNADOR; }
 
