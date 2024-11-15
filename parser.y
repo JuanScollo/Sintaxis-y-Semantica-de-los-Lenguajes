@@ -1,110 +1,68 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-
-// Prototipos
+extern FILE *yyin;
 int yylex();
 void yyerror(const char *s);
-
 %}
 
-%token VARIABLE ASIGNAR SI SINO ID ENTERO CARACTER MAS MENOS MULT DIV MOD MENOR MAYOR MENORIG MAYORIG IGUAL DESIGUAL APERTURA CIERRE PARTIZQ PARTDER ASIGN FIN
+%token SI SINO VARIABLE ASIGNAR
+%token IDENTIFICADOR ENTERO CARACTER
+%token APERTURA_BLOQUE CIERRE_BLOQUE FIN_SENTENCIA ASIGNADOR
+%token SUMA RESTA MULTIPLICACION DIVISION
+%token MENOR_QUE MAYOR_QUE MENOR_IGUAL MAYOR_IGUAL IGUAL DISTINTO
 
 %%
-// Reglas de producción
 
-programa:
-    sentencias
-    ;
+programa: declaraciones bloque_principal;
 
-sentencias:
-    sentencias sentencia
-    | sentencia
-    ;
+declaraciones: VARIABLE IDENTIFICADOR FIN_SENTENCIA
+              | VARIABLE IDENTIFICADOR FIN_SENTENCIA declaraciones;
 
-sentencia:
-    sentenciaDeclaracion
-    | sentenciaAsignacion
-    | condicionalAsignacion
-    | condicionalMuestra
-    ;
+bloque_principal: asignacion_condicionales
+                | asignacion_varias;
 
-sentenciaDeclaracion:
-    VARIABLE ID FIN { printf("Declaración de variable: %s\n", $2); }
-    ;
+asignacion_condicionales: asignacion SI condicion APERTURA_BLOQUE asignacion_varias CIERRE_BLOQUE
+                         | asignacion SI condicion APERTURA_BLOQUE asignacion_varias CIERRE_BLOQUE SINO APERTURA_BLOQUE asignacion_varias CIERRE_BLOQUE;
 
-sentenciaAsignacion:
-    ASIGNAR ID ASIGN expresion FIN { printf("Asignación a %s\n", $2); }
-    ;
+asignacion_varias: asignacion
+                 | asignacion asignacion_varias;
 
-condicionalAsignacion:
-    SI PARTIZQ condicion PARTDER APERTURA sentencias CIERRE
-    | SI PARTIZQ condicion PARTDER APERTURA sentencias CIERRE SINO APERTURA sentencias CIERRE
-    ;
+asignacion: ASIGNAR IDENTIFICADOR ASIGNADOR ENTERO FIN_SENTENCIA
+          | ASIGNAR IDENTIFICADOR ASIGNADOR IDENTIFICADOR SUMA IDENTIFICADOR FIN_SENTENCIA
+          | ASIGNAR IDENTIFICADOR ASIGNADOR IDENTIFICADOR MULTIPLICACION IDENTIFICADOR FIN_SENTENCIA;
 
-condicionalMuestra:
-    SI PARTIZQ condicion PARTDER APERTURA muestra CIERRE
-    | SI PARTIZQ condicion PARTDER APERTURA muestra CIERRE SINO APERTURA muestra CIERRE
-    ;
+condicion: '(' IDENTIFICADOR MENOR_QUE IDENTIFICADOR ')'
+         | '(' IDENTIFICADOR MAYOR_QUE IDENTIFICADOR ')'
+         | '(' IDENTIFICADOR MENOR_IGUAL IDENTIFICADOR ')'
+         | '(' IDENTIFICADOR MAYOR_IGUAL IDENTIFICADOR ')'
+         | '(' IDENTIFICADOR IGUAL IDENTIFICADOR ')'
+         | '(' IDENTIFICADOR DISTINTO IDENTIFICADOR ')';
 
-muestra:
-    "mostrar" PARTIZQ sentencia PARTDER FIN { printf("Mostrando resultado\n"); }
-    ;
+%%
 
-expresion:
-    termino
-    | expresion MAS termino
-    | expresion MENOS termino
-    ;
-
-termino:
-    factor
-    | termino MULT factor
-    | termino DIV factor
-    | termino MOD factor
-    ;
-
-factor:
-    ID
-    | ENTERO
-    | PARTIZQ expresion PARTDER
-    ;
-
-condicion:
-    expresion comparador expresion
-    ;
-
-comparador:
-    MENOR
-    | MAYOR
-    | MENORIG
-    | MAYORIG
-    | IGUAL
-    | DESIGUAL
-    ;
-
-%% 
-
-// Función de manejo de errores
-void yyerror(const char *s) {
-    fprintf(stderr, "Error: %s\n", s);
-}
-
-// Función principal
 int main(int argc, char **argv) {
-    if (argc != 2) {
+    if (argc < 2) {
         fprintf(stderr, "Uso: %s <archivo>\n", argv[0]);
         return 1;
     }
-
-    FILE *archivo = fopen(argv[1], "r");
-    if (!archivo) {
+    
+    yyin = fopen(argv[1], "r");
+    if (!yyin) {
         perror("Error al abrir el archivo");
         return 1;
     }
-
-    yyin = archivo;
-    yyparse();
-    fclose(archivo);
+    
+    if (yyparse() == 0) {
+        printf("El archivo se ha procesado correctamente.\n");
+    } else {
+        printf("Hubo un error de sintaxis en el archivo.\n");
+    }
+    
+    fclose(yyin);
     return 0;
+}
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: %s\n", s);
 }
